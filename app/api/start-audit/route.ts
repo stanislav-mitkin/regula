@@ -3,12 +3,14 @@ import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { v4 as uuidv4 } from "uuid";
 
+const scheduled = new Set<string>();
+
 const startAuditSchema = z.object({
-  url: z.string().url("Invalid URL format").min(1, "URL is required"),
+  url: z.url("Invalid URL format").min(1, "URL is required"),
   consent: z.boolean().refine((val) => val === true, {
     message: "Consent is required",
   }),
-  email: z.string().email("Invalid email format").optional().or(z.literal("")),
+  email: z.email("Invalid email format").optional().or(z.literal("")),
 });
 
 export async function POST(request: NextRequest) {
@@ -29,6 +31,22 @@ export async function POST(request: NextRequest) {
     }
 
     const { url, consent, email } = validationResult.data;
+
+    const { data: existingPending } = await supabase
+      .from("audit_requests")
+      .select("id,status")
+      .eq("url", url)
+      .eq("status", "pending")
+      .limit(1);
+
+    if (existingPending && existingPending.length > 0) {
+      return NextResponse.json({
+        success: true,
+        auditId: existingPending[0].id,
+        status: "pending",
+      });
+    }
+
     const auditId = uuidv4();
 
     // Create audit request in database
@@ -54,53 +72,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Trigger actual audit process (scanner service)
-    // For now, we'll simulate a delayed processing
-    setTimeout(async () => {
-      try {
-        // Simulate audit completion
-        const mockViolations = [
-          {
-            id: uuidv4(),
-            type: "missing_consent",
-            description: "Отсутствует четкое согласие на обработку ПДн",
-            severity: "high",
-            details: { location: "contact_form" },
-          },
-          {
-            id: uuidv4(),
-            type: "missing_privacy_policy",
-            description: "Отсутствует политика конфиденциальности",
-            severity: "medium",
-            details: { location: "footer" },
-          },
-        ];
+    if (!scheduled.has(auditId)) {
+      scheduled.add(auditId);
+      setTimeout(async () => {
+        try {
+          // Simulate audit completion
+          const mockViolations = [
+            {
+              id: uuidv4(),
+              type: "missing_consent",
+              description: "Отсутствует четкое согласие на обработку ПДн",
+              severity: "high",
+              details: { location: "contact_form" },
+            },
+            {
+              id: uuidv4(),
+              type: "missing_privacy_policy",
+              description: "Отсутствует политика конфиденциальности",
+              severity: "medium",
+              details: { location: "footer" },
+            },
+          ];
 
-        await supabase
-          .from("audit_requests")
-          .update({
-            status: "completed",
-            violations: mockViolations,
-            risk_level: "high",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", auditId);
+          await supabase
+            .from("audit_requests")
+            .update({
+              status: "completed",
+              violations: mockViolations,
+              risk_level: "high",
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", auditId);
 
-        // Create violations records
-        for (const violation of mockViolations) {
-          await supabase.from("violations").insert({
-            id: violation.id,
-            audit_id: auditId,
-            type: violation.type,
-            description: violation.description,
-            severity: violation.severity,
-            details: violation.details,
-          });
+          // Create violations records
+          for (const violation of mockViolations) {
+            await supabase.from("violations").insert({
+              id: violation.id,
+              audit_id: auditId,
+              type: violation.type,
+              description: violation.description,
+              severity: violation.severity,
+              details: violation.details,
+            });
+          }
+          scheduled.delete(auditId);
+        } catch (err) {
+          console.error("Audit simulation error:", err);
         }
-      } catch (err) {
-        console.error("Audit simulation error:", err);
-      }
-    }, 30000); // 30 seconds delay
+      }, 5000);
+    }
 
     return NextResponse.json({
       success: true,

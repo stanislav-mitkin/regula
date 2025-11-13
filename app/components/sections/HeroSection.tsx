@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AuditForm } from '../forms/AuditForm';
 import { StartAuditRequest, StartAuditResponse } from '@/types/audit';
@@ -10,6 +10,10 @@ export const HeroSection: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<StartAuditResponse | null>(null);
   const [error, setError] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
+  const [summary, setSummary] = useState<string>('');
+  const [risk, setRisk] = useState<string>('');
+  const [violationsCount, setViolationsCount] = useState<number>(0);
 
   const handleAuditSubmit = async (data: StartAuditRequest) => {
     setLoading(true);
@@ -28,6 +32,7 @@ export const HeroSection: React.FC = () => {
       
       if (response.ok) {
         setResult(result);
+        setStatus(result.status);
       } else {
         setError(result.error || 'Произошла ошибка при проверке');
       }
@@ -37,6 +42,33 @@ export const HeroSection: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    const poll = async () => {
+      if (!result?.auditId) return;
+      try {
+        const res = await fetch(`/api/get-report-status?id=${result.auditId}`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setStatus(data.status);
+          if (data.status !== 'pending') {
+            setSummary(data.summary || '');
+            setRisk(data.riskLevel || 'unknown');
+            setViolationsCount(Array.isArray(data.violations) ? data.violations.length : 0);
+            if (interval) clearInterval(interval);
+          }
+        }
+      } catch (e) {}
+    };
+    if (result?.auditId) {
+      interval = setInterval(poll, 2000);
+      poll();
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [result?.auditId]);
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 overflow-hidden">
@@ -119,9 +151,14 @@ export const HeroSection: React.FC = () => {
                 <p className="text-green-600 text-sm font-medium">
                   Проверка запущена! ID: {result.auditId}
                 </p>
-                <p className="text-green-500 text-sm mt-1">
-                  Статус: {result.status}
-                </p>
+                <p className="text-green-500 text-sm mt-1">Статус: {status || result.status}</p>
+                {status === 'completed' && (
+                  <div className="mt-2 text-sm text-green-700">
+                    <p>Итог: {summary}</p>
+                    <p className="mt-1">Уровень риска: {risk}</p>
+                    <p className="mt-1">Нарушений: {violationsCount}</p>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
