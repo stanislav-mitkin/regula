@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError } from "axios";
 
 export interface ParsedInput {
   type: string;
@@ -22,16 +22,19 @@ export interface AuditContext {
 }
 
 export type AuditFetchErrorCode =
-  | 'invalid_url'
-  | 'forbidden'
-  | 'not_found'
-  | 'server_unavailable'
-  | 'timeout'
-  | 'dns_error'
-  | 'network_error'
-  | 'ssl_error'
-  | 'non_html'
-  | 'unknown';
+  | "invalid_url"
+  | "forbidden"
+  | "not_found"
+  | "server_unavailable"
+  | "timeout"
+  | "dns_error"
+  | "dns_temp_error"
+  | "network_error"
+  | "unreachable"
+  | "connection_reset"
+  | "ssl_error"
+  | "non_html"
+  | "unknown";
 
 export interface AuditFetchError {
   code: AuditFetchErrorCode;
@@ -46,54 +49,112 @@ export type AuditContextResult =
 export function normalizeUrl(input: string): string {
   const u = new URL(input);
   const origin = u.origin;
-  const hasOnlyRoot = u.pathname === '/' && !u.search && !u.hash;
+  const hasOnlyRoot = u.pathname === "/" && !u.search && !u.hash;
   if (hasOnlyRoot) return origin;
-  const path = u.pathname.endsWith('/') && u.pathname !== '/' ? u.pathname.slice(0, -1) : u.pathname;
+  const path =
+    u.pathname.endsWith("/") && u.pathname !== "/"
+      ? u.pathname.slice(0, -1)
+      : u.pathname;
   return `${origin}${path}${u.search}${u.hash}`;
 }
 
-export async function buildAuditContext(url: string): Promise<AuditContextResult> {
+export async function buildAuditContext(
+  url: string
+): Promise<AuditContextResult> {
   // Validate URL
+
   let normalized: URL;
   try {
     normalized = new URL(url);
     if (!/^https?:$/.test(normalized.protocol)) {
       return {
         ok: false,
-        error: { code: 'invalid_url', message: 'Неверная схема URL. Допустимы только http/https.' }
+        error: {
+          code: "invalid_url",
+          message: "Неверная схема URL. Допустимы только http/https.",
+        },
       };
     }
   } catch {
-    return { ok: false, error: { code: 'invalid_url', message: 'Невалидный адрес сайта. Проверьте правильность URL.' } };
+    return {
+      ok: false,
+      error: {
+        code: "invalid_url",
+        message: "Невалидный адрес сайта. Проверьте правильность URL.",
+      },
+    };
   }
 
   try {
     const canon = normalizeUrl(normalized.toString());
+    if (!canon.startsWith("http://") && !canon.startsWith("https://")) {
+      return {
+        ok: false,
+        error: {
+          code: "invalid_url",
+          message: "Неверный или неподдерживаемый формат URL.",
+        },
+      };
+    }
+
     const response = await axios.get(canon, {
       timeout: 10000,
       maxRedirects: 5,
-      validateStatus: () => true,
+      validateStatus: () => true, // мы сами обрабатываем статусы
     });
 
     const status = response.status;
+
+    // HTTP ошибки
     if (status === 403) {
-      return { ok: false, error: { code: 'forbidden', message: 'Доступ запрещён (403). Проверка невозможна.' } };
+      return {
+        ok: false,
+        error: {
+          code: "forbidden",
+          message: "Доступ запрещён (403). Проверка невозможна.",
+        },
+      };
     }
     if (status === 404) {
-      return { ok: false, error: { code: 'not_found', message: 'Страница не найдена (404). Проверьте URL.' } };
+      return {
+        ok: false,
+        error: {
+          code: "not_found",
+          message: "Страница не найдена (404). Проверьте URL.",
+        },
+      };
     }
     if (status >= 500) {
-      return { ok: false, error: { code: 'server_unavailable', message: 'Ошибка на сервере сайта. Попробуйте позже.' } };
+      return {
+        ok: false,
+        error: {
+          code: "server_unavailable",
+          message: "Ошибка на сервере сайта. Попробуйте позже.",
+        },
+      };
     }
     if (status < 200 || status >= 300) {
-      return { ok: false, error: { code: 'unknown', message: `Неожиданный статус ответа (${status}).` } };
+      return {
+        ok: false,
+        error: {
+          code: "unknown",
+          message: `Неожиданный статус ответа (${status}).`,
+        },
+      };
     }
 
     const data = response.data;
-    const html = typeof data === 'string' ? data : '';
+    const html = typeof data === "string" ? data : "";
     const origin = new URL(canon).origin;
+
     if (!isLikelyHtml(html)) {
-      return { ok: false, error: { code: 'non_html', message: 'Полученный контент не является HTML. Проверка невозможна.' } };
+      return {
+        ok: false,
+        error: {
+          code: "non_html",
+          message: "Полученный контент не является HTML. Проверка невозможна.",
+        },
+      };
     }
 
     return {
@@ -106,8 +167,9 @@ export async function buildAuditContext(url: string): Promise<AuditContextResult
         forms: parseForms(html, origin),
       },
     };
-  } catch (err) {
-    return { ok: false, error: classifyAxiosError(err) };
+  } catch (err: any) {
+    const classified = classifyAxiosError(err);
+    return { ok: false, error: classified };
   }
 }
 
@@ -119,13 +181,16 @@ export function resolveUrl(base: string, href: string): string {
   }
 }
 
-export function parseLinks(html: string, base: string): { href: string; text: string }[] {
+export function parseLinks(
+  html: string,
+  base: string
+): { href: string; text: string }[] {
   const results: { href: string; text: string }[] = [];
   const linkRegex = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let m: RegExpExecArray | null;
   while ((m = linkRegex.exec(html)) !== null) {
     const href = resolveUrl(base, m[1]);
-    const text = m[2].replace(/<[^>]*>/g, '').trim();
+    const text = m[2].replace(/<[^>]*>/g, "").trim();
     results.push({ href, text });
   }
   return results;
@@ -146,13 +211,13 @@ export function parseForms(html: string, base: string): ParsedForm[] {
     const formHtml = m[0];
     const actionMatch = actionRegex.exec(formHtml);
     const methodMatch = methodRegex.exec(formHtml);
-    const action = resolveUrl(base, actionMatch ? actionMatch[1] : '');
-    const method = (methodMatch ? methodMatch[1] : 'GET').toUpperCase();
+    const action = resolveUrl(base, actionMatch ? actionMatch[1] : "");
+    const method = (methodMatch ? methodMatch[1] : "GET").toUpperCase();
     const inputs: ParsedInput[] = [];
     let im: RegExpExecArray | null;
     while ((im = inputRegex.exec(formHtml)) !== null) {
       const inputHtml = im[0];
-      const type = (typeRegex.exec(inputHtml)?.[1] || 'text').toLowerCase();
+      const type = (typeRegex.exec(inputHtml)?.[1] || "text").toLowerCase();
       const name = nameRegex.exec(inputHtml)?.[1];
       const value = valueRegex.exec(inputHtml)?.[1];
       const defaultChecked = checkedRegex.test(inputHtml);
@@ -164,17 +229,63 @@ export function parseForms(html: string, base: string): ParsedForm[] {
 }
 
 function isLikelyHtml(html: string): boolean {
-  if (!html || typeof html !== 'string') return false;
+  if (!html || typeof html !== "string") return false;
   const head = html.slice(0, 1000).toLowerCase();
-  return head.includes('<html') || head.includes('<!doctype html');
+  return head.includes("<html") || head.includes("<!doctype html");
 }
 
-function classifyAxiosError(error: any): AuditFetchError {
+export function classifyAxiosError(error: any): AuditFetchError {
   const axiosErr = error as AxiosError;
-  const code = axiosErr.code || (axiosErr.cause && (axiosErr.cause as any).code) || '';
-  if (code === 'ECONNABORTED') return { code: 'timeout', message: 'Истекло время ожидания ответа от сайта.' };
-  if (code === 'ENOTFOUND') return { code: 'dns_error', message: 'Имя домена не найдено (DNS ошибка). Проверьте адрес.' };
-  if (code === 'ERR_NETWORK' || code === 'ECONNREFUSED') return { code: 'network_error', message: 'Сетевая ошибка. Сервер недоступен или отсутствует подключение к интернету.' };
-  if (code?.startsWith('SSL') || code === 'EPROTO') return { code: 'ssl_error', message: 'Ошибка SSL/протокола при подключении к сайту.' };
-  return { code: 'unknown', message: 'Не удалось выполнить запрос к сайту по неизвестной причине.', details: { code } };
+  const code =
+    axiosErr.code || (axiosErr.cause && (axiosErr.cause as any).code) || "";
+
+  switch (code) {
+    case "ECONNABORTED":
+      return {
+        code: "timeout",
+        message: "Истекло время ожидания ответа от сайта.",
+      };
+    case "ENOTFOUND":
+      return {
+        code: "dns_error",
+        message: "Имя домена не найдено (DNS ошибка). Проверьте адрес.",
+      };
+    case "EAI_AGAIN":
+      return {
+        code: "dns_temp_error",
+        message: "Временная ошибка DNS. Попробуйте позже.",
+      };
+    case "ERR_NETWORK":
+    case "ECONNREFUSED":
+      return {
+        code: "network_error",
+        message:
+          "Сетевая ошибка. Сервер недоступен или отсутствует подключение к интернету.",
+      };
+    case "EHOSTUNREACH":
+    case "ENETUNREACH":
+      return {
+        code: "unreachable",
+        message: "Сервер недостижим. Проверьте сеть.",
+      };
+    case "ECONNRESET":
+      return {
+        code: "connection_reset",
+        message: "Соединение было сброшено сервером.",
+      };
+    case "EPROTO":
+    case "ERR_SSL_PROTOCOL_ERROR":
+    case "ERR_SSL_WRONG_VERSION_NUMBER":
+    case "ERR_SSL_HANDSHAKE_FAILURE":
+      return {
+        code: "ssl_error",
+        message: "Ошибка SSL/протокола при подключении к сайту.",
+      };
+    default:
+      return {
+        code: "unknown",
+        message: "Не удалось выполнить запрос к сайту по неизвестной причине.",
+        details: { code },
+      };
+  }
 }
