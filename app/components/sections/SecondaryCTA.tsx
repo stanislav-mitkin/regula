@@ -39,7 +39,7 @@ export const SecondaryCTA: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-gray-900">
+    <section className="py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -48,35 +48,35 @@ export const SecondaryCTA: React.FC = () => {
           viewport={{ once: true }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
         >
-          <div className="text-white">
+          <div className="text-gray-900">
             <h2 className="text-4xl font-bold mb-6">
               Получите чек-лист по 152-ФЗ
             </h2>
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
               Бесплатный PDF-чек-лист с 25 пунктами для самостоятельной проверки 
               вашего сайта на соответствие требованиям закона о персональных данных.
             </p>
             
             <div className="space-y-4 mb-8">
               <div className="flex items-center">
-                <FileText className="h-5 w-5 text-blue-400 mr-3" />
-                <span className="text-gray-300">25 критических пунктов проверки</span>
+                <FileText className="h-5 w-5 text-blue-600 mr-3" />
+                <span className="text-gray-600">25 критических пунктов проверки</span>
               </div>
               <div className="flex items-center">
-                <Download className="h-5 w-5 text-blue-400 mr-3" />
-                <span className="text-gray-300">Мгновенное скачивание после заполнения формы</span>
+                <Download className="h-5 w-5 text-blue-600 mr-3" />
+                <span className="text-gray-600">Мгновенное скачивание после заполнения формы</span>
               </div>
               <div className="flex items-center">
-                <FileText className="h-5 w-5 text-blue-400 mr-3" />
-                <span className="text-gray-300">Обновляется при изменении законодательства</span>
+                <FileText className="h-5 w-5 text-blue-600 mr-3" />
+                <span className="text-gray-600">Обновляется при изменении законодательства</span>
               </div>
             </div>
             
-            <div className="bg-blue-900 bg-opacity-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-300 mb-3">
+            <div className="bg-white rounded-lg p-6 border border-slate-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 Или закажите консультацию
               </h3>
-              <p className="text-blue-200">
+              <p className="text-gray-600">
                 Получите персональные рекомендации от экспертов с 10-летним опытом 
                 работы в сфере защиты персональных данных.
               </p>
