@@ -15,27 +15,29 @@ export const HeroSection: React.FC = () => {
   const [risk, setRisk] = useState<string>("");
   const [violationsCount, setViolationsCount] = useState<number>(0);
   const [progress, setProgress] = useState<number>(0);
-  const [checks, setChecks] = useState<Array<{ id: string; status: string; details?: string }>>([]);
+  const [checks, setChecks] = useState<
+    Array<{ id: string; status: string; details?: string }>
+  >([]);
 
   const labelForCheck = (id: string) => {
     switch (id) {
-      case 'privacy_policy_presence':
-        return 'Политика конфиденциальности';
-      case 'consent_checkboxes':
-        return 'Согласие (чекбоксы)';
-      case 'https_forms':
-        return 'HTTPS при передаче данных';
-      case 'cookie_banner':
-        return 'Баннер cookies';
+      case "privacy_policy_presence":
+        return "Политика конфиденциальности";
+      case "consent_checkboxes":
+        return "Согласие (чекбоксы)";
+      case "https_forms":
+        return "HTTPS при передаче данных";
+      case "cookie_banner":
+        return "Баннер cookies";
       default:
         return id;
     }
   };
 
   const statusLabel = (s: string) => {
-    if (s === 'pass') return 'Пройдено';
-    if (s === 'fail') return 'Не пройдено';
-    return 'Не определено';
+    if (s === "pass") return "Пройдено";
+    if (s === "fail") return "Не пройдено";
+    return "Не определено";
   };
 
   const handleAuditSubmit = async (data: StartAuditRequest) => {
@@ -78,7 +80,10 @@ export const HeroSection: React.FC = () => {
           if (typeof data.progress === "number") setProgress(data.progress);
           if (Array.isArray(data.checks)) setChecks(data.checks);
           if (data.status === "error") {
-            const msg = (Array.isArray(data.checks) && data.checks[0]?.details) || data.summary || "Проверка завершилась с ошибкой";
+            const msg =
+              (Array.isArray(data.checks) && data.checks[0]?.details) ||
+              data.summary ||
+              "Проверка завершилась с ошибкой";
             setError(msg);
             if (interval) clearInterval(interval);
           } else if (data.status !== "pending") {
@@ -103,7 +108,6 @@ export const HeroSection: React.FC = () => {
 
   return (
     <section className="relative min-h-screen bg-gradient-to-b from-white via-blue-50 to-blue-100 overflow-hidden">
-
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen">
           <motion.div
@@ -138,11 +142,15 @@ export const HeroSection: React.FC = () => {
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
                 <div className="text-2xl font-bold text-blue-600">1.5 млн</div>
-                <div className="text-sm text-slate-600">За отсутствие согласия</div>
+                <div className="text-sm text-slate-600">
+                  За отсутствие согласия
+                </div>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
                 <div className="text-2xl font-bold text-blue-600">4 года</div>
-                <div className="text-sm text-slate-600">Уголовная ответственность</div>
+                <div className="text-sm text-slate-600">
+                  Уголовная ответственность
+                </div>
               </div>
             </div>
           </motion.div>
@@ -181,13 +189,20 @@ export const HeroSection: React.FC = () => {
                 {status === "pending" && (
                   <div className="mt-3">
                     <div className="w-full h-2 bg-green-100 rounded">
-                      <div className="h-2 bg-green-500 rounded" style={{ width: `${progress}%` }}></div>
+                      <div
+                        className="h-2 bg-green-500 rounded"
+                        style={{ width: `${progress}%` }}
+                      ></div>
                     </div>
-                    <div className="mt-2 text-xs text-green-700">Прогресс: {progress}%</div>
+                    <div className="mt-2 text-xs text-green-700">
+                      Прогресс: {progress}%
+                    </div>
                     <ul className="mt-3 space-y-2 text-xs text-green-800">
                       {checks.map((c) => (
                         <li key={c.id} className="flex items-center">
-                          <span className="font-medium mr-2">{labelForCheck(c.id)}:</span>
+                          <span className="font-medium mr-2">
+                            {labelForCheck(c.id)}:
+                          </span>
                           <span>{statusLabel(c.status)}</span>
                         </li>
                       ))}
@@ -195,7 +210,13 @@ export const HeroSection: React.FC = () => {
                   </div>
                 )}
                 {status === "completed" && (
-                  <div className="mt-2 text-sm text-green-700">
+                  <div
+                    className={`mt-2 text-sm ${
+                      risk === "low" ? "text-green-600" : ""
+                    } ${risk === "medium" ? "text-yellow-600" : ""} ${
+                      risk === "high" ? "text-red-600" : ""
+                    }`}
+                  >
                     <p>Итог: {summary}</p>
                     <p className="mt-1">Уровень риска: {risk}</p>
                     <p className="mt-1">Нарушений: {violationsCount}</p>

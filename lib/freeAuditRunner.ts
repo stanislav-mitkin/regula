@@ -8,7 +8,7 @@ export async function freeAuditRunner(auditId: string, url: string) {
   const ctxRes = await buildAuditContext(url);
   if (!ctxRes.ok) {
     const message = ctxRes.error.message;
-    auditProgressMap.set(auditId, { status: 'error', progress: 0, checks: [{ id: 'fetch_context', status: 'unknown', details: message }] });
+    auditProgressMap.set(auditId, { status: 'error', progress: 0, checks: [{ id: 'fetch_context', status: 'unknown', details: message }], risk_level: 'unknown' });
     await supabase
       .from('audit_requests')
       .update({ status: 'error', risk_level: 'unknown', completed_at: new Date().toISOString() })
@@ -37,15 +37,21 @@ export async function freeAuditRunner(auditId: string, url: string) {
 
   const fails = results.filter(r => r.status === 'fail').length;
   const risk_level = fails >= 2 ? 'high' : fails === 1 ? 'medium' : 'low';
-  const violations = results
+  const violationsJson = results
     .filter(r => r.status === 'fail')
     .map(r => ({ id: `${auditId}-${r.id}`, type: r.id, description: r.details || 'Пункт не выполнен', severity: fails >= 2 ? 'high' : 'medium', details: {} }));
 
   await supabase
     .from('audit_requests')
-    .update({ status: 'completed', violations, risk_level, completed_at: new Date().toISOString() })
+    .update({ status: 'completed', violations: violationsJson, risk_level, completed_at: new Date().toISOString() })
     .eq('id', auditId);
 
-  auditProgressMap.set(auditId, { status: 'completed', progress: 100, checks: results.map(r => ({ id: r.id, status: r.status, details: r.details })) });
+  for (const v of violationsJson) {
+    await supabase
+      .from('violations')
+      .insert({ audit_id: auditId, type: v.type, description: v.description, severity: v.severity, details: v.details });
+  }
+
+  auditProgressMap.set(auditId, { status: 'completed', progress: 100, checks: results.map(r => ({ id: r.id, status: r.status, details: r.details })), risk_level });
   console.log('AUDIT_RUN_END', { auditId, risk_level, fails });
 }

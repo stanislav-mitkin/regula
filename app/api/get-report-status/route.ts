@@ -14,40 +14,31 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Try memory-first
-    const entry = auditProgressMap.get(auditId);
-    let status = entry?.status || 'pending';
-    let risk_level = 'unknown';
-    let violations: any[] = [];
-    let fromDb = false;
-
-    if (!entry) {
-      const { data: audit, error: auditError } = await supabase
-        .from('audit_requests')
-        .select('*')
-        .eq('id', auditId)
-        .single();
-      if (!auditError && audit) {
-        fromDb = true;
-        status = audit.status;
-        risk_level = audit.risk_level || 'unknown';
-      } else {
-        return NextResponse.json(
-          { success: false, error: 'Audit not found' },
-          { status: 404 }
-        );
-      }
+    // Always read DB for authoritative status and risk_level
+    const { data: audit, error: auditError } = await supabase
+      .from('audit_requests')
+      .select('*')
+      .eq('id', auditId)
+      .single();
+    if (auditError || !audit) {
+      return NextResponse.json(
+        { success: false, error: 'Audit not found' },
+        { status: 404 }
+      );
     }
+    const status = audit.status;
+    const risk_level = audit.risk_level || 'unknown';
+    let violations = Array.isArray((audit as any).violations) ? (audit as any).violations : [];
     
     // Get violations if audit is completed
-    if ((fromDb && status === 'completed') || entry?.status === 'completed') {
+    if (status === 'completed') {
       const { data: violationsData, error: violationsError } = await supabase
         .from('violations')
         .select('*')
         .eq('audit_id', auditId);
       
-      if (!violationsError) {
-        violations = violationsData || [];
+      if (!violationsError && Array.isArray(violationsData)) {
+        violations = [...violations, ...violationsData];
       }
     }
     
