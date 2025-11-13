@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
     const status = audit.status;
     const risk_level = audit.risk_level || 'unknown';
-    let violations = Array.isArray((audit as any).violations) ? (audit as any).violations : [];
+    let violations = [];
     
     // Get violations if audit is completed
     if (status === 'completed') {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         .eq('audit_id', auditId);
       
       if (!violationsError && Array.isArray(violationsData)) {
-        violations = [...violations, ...violationsData];
+        violations = violationsData;
       }
     }
     

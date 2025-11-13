@@ -24,6 +24,7 @@ export async function freeAuditRunner(auditId: string, url: string) {
     checkCookieBanner,
   ];
   const results = [] as Awaited<ReturnType<typeof checkPrivacyPolicyPresence>>[];
+  
   for (let i = 0; i < steps.length; i++) {
     const fn = steps[i];
     const r = await fn(ctx);
@@ -33,6 +34,9 @@ export async function freeAuditRunner(auditId: string, url: string) {
     const progress = Math.round(((i + 1) / steps.length) * 100);
     const checks = (entry?.checks || []).concat({ id: r.id, status: r.status, details: r.details });
     auditProgressMap.set(auditId, { status: 'pending', progress, checks });
+    if (i < steps.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
   }
 
   const fails = results.filter(r => r.status === 'fail').length;
