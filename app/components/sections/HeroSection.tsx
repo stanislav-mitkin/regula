@@ -1,0 +1,132 @@
+'use client';
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { AuditForm } from '../forms/AuditForm';
+import { StartAuditRequest, StartAuditResponse } from '@/types/audit';
+import { Shield, AlertTriangle } from 'lucide-react';
+
+export const HeroSection: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<StartAuditResponse | null>(null);
+  const [error, setError] = useState<string>('');
+
+  const handleAuditSubmit = async (data: StartAuditRequest) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/start-audit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setResult(result);
+      } else {
+        setError(result.error || 'Произошла ошибка при проверке');
+      }
+    } catch (err) {
+      setError('Не удалось подключиться к серверу проверки');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="relative min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 overflow-hidden">
+      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-white"
+          >
+            <div className="flex items-center mb-6">
+              <Shield className="h-8 w-8 text-yellow-400 mr-3" />
+              <span className="text-yellow-400 font-semibold text-lg">RegulaGuard</span>
+            </div>
+            
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              Штрафы до{' '}
+              <span className="text-red-400">15 млн руб.</span>
+              <br />
+              за нарушение 152-ФЗ
+            </h1>
+            
+            <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+              Автоматизированная проверка вашего сайта на соответствие требованиям 
+              закона о персональных данных. Защитите свой бизнес от крупных штрафов 
+              и уголовной ответственности.
+            </p>
+            
+            <div className="flex items-center mb-8 text-yellow-300">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              <span className="font-medium">
+                Каждый третий сайт в России имеет критические нарушения
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+              <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                <div className="text-2xl font-bold text-red-400">15 млн</div>
+                <div className="text-sm text-blue-100">Максимальный штраф</div>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                <div className="text-2xl font-bold text-orange-400">1.5 млн</div>
+                <div className="text-sm text-blue-100">За отсутствие согласия</div>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                <div className="text-2xl font-bold text-yellow-400">4 года</div>
+                <div className="text-sm text-blue-100">Уголовная ответственность</div>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-2xl p-8"
+          >
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Бесплатная проверка сайта
+              </h2>
+              <p className="text-gray-600">
+                Получите предварительный отчет о нарушениях за 2 минуты
+              </p>
+            </div>
+            
+            <AuditForm onSubmit={handleAuditSubmit} loading={loading} />
+            
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+            
+            {result && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-600 text-sm font-medium">
+                  Проверка запущена! ID: {result.auditId}
+                </p>
+                <p className="text-green-500 text-sm mt-1">
+                  Статус: {result.status}
+                </p>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
