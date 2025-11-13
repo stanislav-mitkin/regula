@@ -14,6 +14,29 @@ export const HeroSection: React.FC = () => {
   const [summary, setSummary] = useState<string>("");
   const [risk, setRisk] = useState<string>("");
   const [violationsCount, setViolationsCount] = useState<number>(0);
+  const [progress, setProgress] = useState<number>(0);
+  const [checks, setChecks] = useState<Array<{ id: string; status: string; details?: string }>>([]);
+
+  const labelForCheck = (id: string) => {
+    switch (id) {
+      case 'privacy_policy_presence':
+        return 'Политика конфиденциальности';
+      case 'consent_checkboxes':
+        return 'Согласие (чекбоксы)';
+      case 'https_forms':
+        return 'HTTPS при передаче данных';
+      case 'cookie_banner':
+        return 'Баннер cookies';
+      default:
+        return id;
+    }
+  };
+
+  const statusLabel = (s: string) => {
+    if (s === 'pass') return 'Пройдено';
+    if (s === 'fail') return 'Не пройдено';
+    return 'Не определено';
+  };
 
   const handleAuditSubmit = async (data: StartAuditRequest) => {
     setLoading(true);
@@ -52,7 +75,13 @@ export const HeroSection: React.FC = () => {
         const data = await res.json();
         if (res.ok && data.success) {
           setStatus(data.status);
-          if (data.status !== "pending") {
+          if (typeof data.progress === "number") setProgress(data.progress);
+          if (Array.isArray(data.checks)) setChecks(data.checks);
+          if (data.status === "error") {
+            const msg = (Array.isArray(data.checks) && data.checks[0]?.details) || data.summary || "Проверка завершилась с ошибкой";
+            setError(msg);
+            if (interval) clearInterval(interval);
+          } else if (data.status !== "pending") {
             setSummary(data.summary || "");
             setRisk(data.riskLevel || "unknown");
             setViolationsCount(
@@ -89,19 +118,11 @@ export const HeroSection: React.FC = () => {
               за нарушение 152-ФЗ
             </h1>
 
-            <p className="text-xl text-slate-600 mb-6 leading-relaxed">
-              Автоматическая проверка вашего сайта на соответствие требованиям закона о персональных данных. Информационный сервис, без юридической консультации.
+            <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+              Автоматизированная проверка вашего сайта на соответствие
+              требованиям закона о персональных данных. Защитите свой бизнес от
+              крупных штрафов и уголовной ответственности.
             </p>
-
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200 mb-8">
-              <div className="text-sm text-slate-700 font-medium mb-2">Бесплатная проверка включает:</div>
-              <ul className="space-y-2 text-sm text-slate-600">
-                <li>Политика конфиденциальности: наличие документа в открытом доступе</li>
-                <li>Согласие на обработку ПДн: явные чекбоксы во всех формах, без предустановленных галочек</li>
-                <li>HTTPS: обязательное использование при передаче данных из форм</li>
-                <li>Cookie-файлы: наличие баннера/плашки об использовании cookies</li>
-              </ul>
-            </div>
 
             <div className="flex items-center mb-8 text-slate-500">
               <AlertTriangle className="h-5 w-5 mr-2 text-slate-500" />
@@ -131,7 +152,6 @@ export const HeroSection: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="bg-white rounded-2xl shadow-2xl p-8"
-            id="audit-form"
           >
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -158,6 +178,22 @@ export const HeroSection: React.FC = () => {
                 <p className="text-green-500 text-sm mt-1">
                   Статус: {status || result.status}
                 </p>
+                {status === "pending" && (
+                  <div className="mt-3">
+                    <div className="w-full h-2 bg-green-100 rounded">
+                      <div className="h-2 bg-green-500 rounded" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <div className="mt-2 text-xs text-green-700">Прогресс: {progress}%</div>
+                    <ul className="mt-3 space-y-2 text-xs text-green-800">
+                      {checks.map((c) => (
+                        <li key={c.id} className="flex items-center">
+                          <span className="font-medium mr-2">{labelForCheck(c.id)}:</span>
+                          <span>{statusLabel(c.status)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {status === "completed" && (
                   <div className="mt-2 text-sm text-green-700">
                     <p>Итог: {summary}</p>

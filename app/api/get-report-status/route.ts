@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { auditProgressMap } from '../audit-state';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,23 +14,33 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Get audit request
-    const { data: audit, error: auditError } = await supabase
-      .from('audit_requests')
-      .select('*')
-      .eq('id', auditId)
-      .single();
-    
-    if (auditError || !audit) {
-      return NextResponse.json(
-        { success: false, error: 'Audit not found' },
-        { status: 404 }
-      );
+    // Try memory-first
+    const entry = auditProgressMap.get(auditId);
+    let status = entry?.status || 'pending';
+    let risk_level = 'unknown';
+    let violations: any[] = [];
+    let fromDb = false;
+
+    if (!entry) {
+      const { data: audit, error: auditError } = await supabase
+        .from('audit_requests')
+        .select('*')
+        .eq('id', auditId)
+        .single();
+      if (!auditError && audit) {
+        fromDb = true;
+        status = audit.status;
+        risk_level = audit.risk_level || 'unknown';
+      } else {
+        return NextResponse.json(
+          { success: false, error: 'Audit not found' },
+          { status: 404 }
+        );
+      }
     }
     
     // Get violations if audit is completed
-    let violations = [];
-    if (audit.status === 'completed') {
+    if ((fromDb && status === 'completed') || entry?.status === 'completed') {
       const { data: violationsData, error: violationsError } = await supabase
         .from('violations')
         .select('*')
@@ -40,11 +51,15 @@ export async function GET(request: NextRequest) {
       }
     }
     
+    const progressEntry = auditProgressMap.get(auditId);
+    const checks = progressEntry?.checks || [];
+    const progress = progressEntry?.progress ?? (status === 'completed' ? 100 : 0);
+
     // Generate summary
     let summary = '';
-    if (audit.status === 'pending') {
+    if (status === 'pending') {
       summary = 'Проверка в процессе выполнения';
-    } else if (audit.status === 'completed') {
+    } else if (status === 'completed') {
       if (violations.length === 0) {
         summary = 'Критических нарушений не обнаружено';
       } else {
@@ -65,10 +80,12 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      status: audit.status,
+      status: status,
       violations: violations,
-      riskLevel: audit.risk_level || 'unknown',
-      summary: summary
+      riskLevel: risk_level,
+      summary: summary,
+      progress: progress,
+      checks: checks
     });
     
   } catch (error) {

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { v4 as uuidv4 } from "uuid";
+import { freeAuditRunner } from "@/lib/freeAuditRunner";
+import { auditProgressMap } from "../audit-state";
+import { normalizeUrl } from "@/lib/audit";
 
 const scheduled = new Set<string>();
 
@@ -31,11 +34,12 @@ export async function POST(request: NextRequest) {
     }
 
     const { url, consent, email } = validationResult.data;
+    const canonUrl = normalizeUrl(url);
 
     const { data: existingPending } = await supabase
       .from("audit_requests")
       .select("id,status")
-      .eq("url", url)
+      .eq("url", canonUrl)
       .eq("status", "pending")
       .limit(1);
 
@@ -54,7 +58,7 @@ export async function POST(request: NextRequest) {
       .from("audit_requests")
       .insert({
         id: auditId,
-        url,
+        url: canonUrl,
         status: "pending",
         violations: [],
         risk_level: "unknown",
@@ -66,62 +70,23 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Database error:", error);
-      return NextResponse.json(
-        { success: false, error: "Failed to create audit request" },
-        { status: 500 }
-      );
     }
 
     if (!scheduled.has(auditId)) {
       scheduled.add(auditId);
-      setTimeout(async () => {
-        try {
-          // Simulate audit completion
-          const mockViolations = [
-            {
-              id: uuidv4(),
-              type: "missing_consent",
-              description: "Отсутствует четкое согласие на обработку ПДн",
-              severity: "high",
-              details: { location: "contact_form" },
-            },
-            {
-              id: uuidv4(),
-              type: "missing_privacy_policy",
-              description: "Отсутствует политика конфиденциальности",
-              severity: "medium",
-              details: { location: "footer" },
-            },
-          ];
-
-          await supabase
-            .from("audit_requests")
-            .update({
-              status: "completed",
-              violations: mockViolations,
-              risk_level: "high",
-              completed_at: new Date().toISOString(),
-            })
-            .eq("id", auditId);
-
-          // Create violations records
-          for (const violation of mockViolations) {
-            await supabase.from("violations").insert({
-              id: violation.id,
-              audit_id: auditId,
-              type: violation.type,
-              description: violation.description,
-              severity: violation.severity,
-              details: violation.details,
-            });
-          }
+      auditProgressMap.set(auditId, { status: "pending", progress: 0, checks: [] });
+      console.log("AUDIT_START", { auditId, url: canonUrl });
+      freeAuditRunner(auditId, canonUrl)
+        .catch((err) => {
+          console.error("AUDIT_ERROR", { auditId, error: String(err) });
+        })
+        .finally(() => {
+          console.log("AUDIT_SCHEDULE_DONE", { auditId });
           scheduled.delete(auditId);
-        } catch (err) {
-          console.error("Audit simulation error:", err);
-        }
-      }, 5000);
+        });
     }
 
+    console.log("AUDIT_CREATED", { auditId, url: canonUrl });
     return NextResponse.json({
       success: true,
       auditId: auditId,
