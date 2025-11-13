@@ -111,7 +111,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false, s
       
       <div className="w-full">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Интересующая услуга <span className="text-red-500">*</span>
+          Услуга <span className="text-red-500">*</span>
         </label>
         <select
           value={formData.service}
@@ -123,10 +123,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false, s
           disabled={loading}
         >
           <option value="">Выберите услугу</option>
-          <option value="standard">Standard Report (29 900 ₽)</option>
-          <option value="pro">Audit Pro (59 900 ₽)</option>
-          <option value="monitoring">Monitoring (199 900 ₽/год)</option>
-          <option value="consultation">Индивидуальная консультация</option>
+          <option value="paid_report">PDF-отчет (1990 ₽)</option>
         </select>
         {errors.service && (
           <p className="mt-2 text-sm text-red-600">{errors.service}</p>

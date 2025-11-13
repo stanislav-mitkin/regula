@@ -73,13 +73,15 @@ export async function POST(request: NextRequest) {
     
     // Create service request
     const serviceRequestId = uuidv4();
+    const price = service === 'paid_report' ? 1990.0 : null;
     const { error: serviceError } = await supabase
       .from('service_requests')
       .insert({
         id: serviceRequestId,
         lead_id: leadId,
         service_type: service,
-        status: 'pending'
+        status: 'pending',
+        price
       });
     
     if (serviceError) {

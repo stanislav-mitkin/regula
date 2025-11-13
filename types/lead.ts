@@ -13,7 +13,7 @@ export interface Lead {
 export interface ServiceRequest {
   id: string;
   lead_id: string;
-  service_type: 'standard' | 'pro' | 'monitoring';
+  service_type: 'paid_report';
   status: 'pending' | 'approved' | 'rejected' | 'completed';
   price?: number;
   created_at: string;

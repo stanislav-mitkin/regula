@@ -20,7 +20,7 @@ export const Header: React.FC = () => {
 
   const navItems = [
     { href: '#how-it-works', label: 'Как это работает' },
-    { href: '#pricing', label: 'Тарифы' },
+    { href: '#services', label: 'Услуги' },
     { href: '#cases', label: 'Кейсы' },
     { href: '#team', label: 'Эксперты' },
     { href: '#contact', label: 'Контакты' }

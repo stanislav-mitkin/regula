@@ -89,11 +89,19 @@ export const HeroSection: React.FC = () => {
               за нарушение 152-ФЗ
             </h1>
 
-            <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-              Автоматизированная проверка вашего сайта на соответствие
-              требованиям закона о персональных данных. Защитите свой бизнес от
-              крупных штрафов и уголовной ответственности.
+            <p className="text-xl text-slate-600 mb-6 leading-relaxed">
+              Автоматическая проверка вашего сайта на соответствие требованиям закона о персональных данных. Информационный сервис, без юридической консультации.
             </p>
+
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200 mb-8">
+              <div className="text-sm text-slate-700 font-medium mb-2">Бесплатная проверка включает:</div>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li>Политика конфиденциальности: наличие документа в открытом доступе</li>
+                <li>Согласие на обработку ПДн: явные чекбоксы во всех формах, без предустановленных галочек</li>
+                <li>HTTPS: обязательное использование при передаче данных из форм</li>
+                <li>Cookie-файлы: наличие баннера/плашки об использовании cookies</li>
+              </ul>
+            </div>
 
             <div className="flex items-center mb-8 text-slate-500">
               <AlertTriangle className="h-5 w-5 mr-2 text-slate-500" />
@@ -123,6 +131,7 @@ export const HeroSection: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="bg-white rounded-2xl shadow-2xl p-8"
+            id="audit-form"
           >
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">

@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Card } from "../ui/Card";
-import { Check, Star } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "../ui/Button";
 
 interface PricingPlan {
@@ -11,61 +11,50 @@ interface PricingPlan {
   price: string;
   description: string;
   features: string[];
-  recommended?: boolean;
   ctaText: string;
+  onClick?: () => void;
 }
 
 const pricingPlans: PricingPlan[] = [
   {
-    name: "Standard Report",
-    price: "29 900 ₽",
-    description: "Технический аудит соответствия 152-ФЗ",
+    name: "Бесплатная проверка",
+    price: "Бесплатно",
+    description: "Автоматическая проверка базовых параметров в реальном времени",
     features: [
-      "Полный технический аудит сайта",
-      "Анализ POST-запросов и cookies",
-      "Проверка форм и интеграций",
-      "Отчет с перечнем нарушений",
-      "Рекомендации по устранению",
-      "Приоритетная поддержка",
+      "Политика конфиденциальности: наличие документа в открытом доступе",
+      "Согласие на обработку ПДн: явные чекбоксы во всех формах, без предустановленных галочек",
+      "Защита данных при передаче: использование HTTPS при отправке данных из форм",
+      "Cookie-файлы: наличие баннера/плашки об использовании cookies",
     ],
-    ctaText: "Заказать аудит",
+    ctaText: "Проверить сайт",
+    onClick: () => {
+      const el = document.getElementById("audit-form");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    },
   },
   {
-    name: "Audit Pro",
-    price: "59 900 ₽",
-    description: "Комплексный аудит + юридические шаблоны",
+    name: "PDF-отчет",
+    price: "1990 ₽",
+    description: "Расширенная автоматическая проверка с подробным отчетом в PDF",
     features: [
-      "Все функции Standard Report",
-      "Юридический анализ документов",
-      "Шаблоны политики конфиденциальности",
-      "Соглашение на обработку ПДн",
-      "Персональные рекомендации",
-      "Консультация юриста 1 час",
-      "Гарантия соответствия",
+      "Политика конфиденциальности: ясность текста, актуальные сроки хранения и цели обработки, корректные реквизиты оператора",
+      "Согласие на обработку ПДн: корректные формулировки целей, доступность полной Политики рядом с формой",
+      "HTTPS: проверка срока действия SSL-сертификата",
+      "Cookie-файлы: возможность согласия/отказа, корректная работа механизма",
+      "Базовая безопасность: контакты для обращений по ПДн, корректные настройки robots.txt для личных кабинетов",
+      "PDF-отчет на email",
     ],
-    recommended: true,
-    ctaText: "Выбрать Pro",
-  },
-  {
-    name: "Monitoring",
-    price: "199 900 ₽/год",
-    description: "Ежемесячный контроль соответствия",
-    features: [
-      "Все функции Audit Pro",
-      "Ежемесячные проверки сайта",
-      "Отслеживание изменений законодательства",
-      "Автоматические уведомления о рисках",
-      "Квартальные отчеты для руководства",
-      "24/7 техническая поддержка",
-      "Экстренное реагирование на утечки",
-    ],
-    ctaText: "Начать мониторинг",
+    ctaText: "Заказать PDF-отчет",
+    onClick: () => {
+      const el = document.getElementById("paid-report");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    },
   },
 ];
 
 export const PricingCards: React.FC = () => {
   return (
-    <section className="py-20 bg-gray-50">
+    <section id="services" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -74,16 +63,13 @@ export const PricingCards: React.FC = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Тарифные пакеты
-          </h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Услуги</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Выберите подходящий пакет услуг для обеспечения соответствия вашего
-            бизнеса требованиям 152-ФЗ
+            Только автоматическая проверка и информационный сервис. Выберите формат: мгновенная базовая проверка или подробный отчет в PDF.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {pricingPlans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -93,18 +79,9 @@ export const PricingCards: React.FC = () => {
               viewport={{ once: true }}
             >
               <Card
-                variant={plan.recommended ? "highlighted" : "default"}
+                variant="default"
                 className="h-full flex flex-col"
               >
-                {plan.recommended && (
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
-                      <Star className="h-4 w-4 mr-1" />
-                      Рекомендуем
-                    </div>
-                  </div>
-                )}
-
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {plan.name}
@@ -125,9 +102,10 @@ export const PricingCards: React.FC = () => {
                 </ul>
 
                 <Button
-                  variant={plan.recommended ? "primary" : "outline"}
+                  variant={index === 1 ? "primary" : "outline"}
                   size="lg"
                   className="w-full"
+                  onClick={plan.onClick}
                 >
                   {plan.ctaText}
                 </Button>
@@ -135,27 +113,6 @@ export const PricingCards: React.FC = () => {
             </motion.div>
           ))}
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          viewport={{ once: true }}
-          className="mt-16 text-center"
-        >
-          <div className="bg-blue-50 rounded-lg p-8 max-w-4xl mx-auto">
-            <h4 className="text-lg font-semibold text-blue-900 mb-4">
-              Нужна индивидуальная консультация?
-            </h4>
-            <p className="text-blue-800 mb-6">
-              Мы предлагаем индивидуальные решения для крупных компаний и
-              специфических отраслей с повышенными требованиями к защите данных.
-            </p>
-            <Button variant="outline" size="lg">
-              Обсудить индивидуальные условия
-            </Button>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

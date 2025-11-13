@@ -39,7 +39,7 @@ export const SecondaryCTA: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-slate-50">
+    <section id="paid-report" className="py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,38 +49,31 @@ export const SecondaryCTA: React.FC = () => {
           className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
         >
           <div className="text-gray-900">
-            <h2 className="text-4xl font-bold mb-6">
-              Получите чек-лист по 152-ФЗ
-            </h2>
+            <h2 className="text-4xl font-bold mb-6">Закажите PDF-отчет</h2>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Бесплатный PDF-чек-лист с 25 пунктами для самостоятельной проверки 
-              вашего сайта на соответствие требованиям закона о персональных данных.
+              Расширенная автоматическая проверка и подробный отчет по вашему сайту. Стоимость услуги: 1990 ₽.
             </p>
             
             <div className="space-y-4 mb-8">
               <div className="flex items-center">
                 <FileText className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="text-gray-600">25 критических пунктов проверки</span>
+                <span className="text-gray-600">Политика конфиденциальности: ясность, актуальность, корректные реквизиты</span>
               </div>
               <div className="flex items-center">
                 <Download className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="text-gray-600">Мгновенное скачивание после заполнения формы</span>
+                <span className="text-gray-600">HTTPS: срок действия SSL-сертификата</span>
               </div>
               <div className="flex items-center">
                 <FileText className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="text-gray-600">Обновляется при изменении законодательства</span>
+                <span className="text-gray-600">Cookie-файлы: корректная работа механизма согласия</span>
+              </div>
+              <div className="flex items-center">
+                <FileText className="h-5 w-5 text-blue-600 mr-3" />
+                <span className="text-gray-600">Базовая безопасность: контакты для обращений, настройки robots.txt</span>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg p-6 border border-slate-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Или закажите консультацию
-              </h3>
-              <p className="text-gray-600">
-                Получите персональные рекомендации от экспертов с 10-летним опытом 
-                работы в сфере защиты персональных данных.
-              </p>
-            </div>
+            <div className="text-sm text-slate-500">Только информационный сервис. Юридическая проверка и консультации не предоставляются.</div>
           </div>
           
           <motion.div
@@ -93,18 +86,14 @@ export const SecondaryCTA: React.FC = () => {
             {!success ? (
               <>
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Получить чек-лист
-                  </h3>
-                  <p className="text-gray-600">
-                    Заполните форму и получите материалы на email
-                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Заказать PDF-отчет</h3>
+                  <p className="text-gray-600">Заполните форму и получите отчет на email</p>
                 </div>
                 
                 <LeadForm 
                   onSubmit={handleLeadSubmit} 
                   loading={loading}
-                  service="consultation"
+                  service="paid_report"
                 />
                 
                 {error && (
@@ -118,15 +107,8 @@ export const SecondaryCTA: React.FC = () => {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Download className="h-8 w-8 text-green-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Спасибо за заявку!
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Чек-лист и инструкции были отправлены на ваш email.
-                </p>
-                <p className="text-sm text-gray-500">
-                  Наш менеджер свяжется с вами в течение 1 рабочего дня для консультации.
-                </p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Спасибо за заказ!</h3>
+                <p className="text-gray-600 mb-4">PDF-отчет будет отправлен на ваш email.</p>
               </div>
             )}
           </motion.div>

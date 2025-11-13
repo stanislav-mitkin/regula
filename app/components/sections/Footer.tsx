@@ -38,28 +38,13 @@ export const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4 text-gray-900">Услуги</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="#" className="text-slate-600 hover:text-gray-900 transition-colors">
-                  Технический аудит
+                <Link href="#audit-form" className="text-slate-600 hover:text-gray-900 transition-colors">
+                  Бесплатная проверка в реальном времени
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-slate-600 hover:text-gray-900 transition-colors">
-                  Юридическое сопровождение
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-slate-600 hover:text-gray-900 transition-colors">
-                  Разработка документов
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-slate-600 hover:text-gray-900 transition-colors">
-                  Обучение персонала
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-slate-600 hover:text-gray-900 transition-colors">
-                  Постоянный мониторинг
+                <Link href="#paid-report" className="text-slate-600 hover:text-gray-900 transition-colors">
+                  PDF-отчет (1990 ₽)
                 </Link>
               </li>
             </ul>
