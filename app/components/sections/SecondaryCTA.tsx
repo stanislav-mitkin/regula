@@ -69,7 +69,7 @@ export const SecondaryCTA: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <FileText className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="text-gray-600">Базовая безопасность: контакты для обращений, настройки robots.txt</span>
+                <span className="text-gray-600">Базовая безопасность: контакты для обращений</span>
               </div>
             </div>
             

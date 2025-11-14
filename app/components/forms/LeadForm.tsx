@@ -90,19 +90,9 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false, s
       />
       
       <Input
-        type="tel"
-        label="Телефон (опционально)"
-        placeholder="+7 (999) 123-45-67"
-        value={formData.phone}
-        onChange={(e) => handleInputChange('phone', e.target.value)}
-        error={errors.phone}
-        disabled={loading}
-      />
-      
-      <Input
         type="text"
         label="Компания (опционально)"
-        placeholder="ООО Ромашка"
+        placeholder="ООО Ваша Компания"
         value={formData.company}
         onChange={(e) => handleInputChange('company', e.target.value)}
         error={errors.company}
