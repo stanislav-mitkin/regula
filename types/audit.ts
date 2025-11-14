@@ -24,6 +24,7 @@ export interface StartAuditRequest {
   url: string;
   consent: boolean;
   email?: string;
+  captchaToken?: string;
 }
 
 export interface StartAuditResponse {

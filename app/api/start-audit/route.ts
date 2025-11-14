@@ -14,6 +14,7 @@ const startAuditSchema = z.object({
     message: "Consent is required",
   }),
   email: z.email("Invalid email format").optional().or(z.literal("")),
+  captchaToken: z.string().max(1000, "Token too long").optional(),
 });
 
 export async function POST(request: NextRequest) {

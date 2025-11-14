@@ -5,6 +5,7 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { z } from 'zod';
 import { SubmitLeadRequest } from '@/types/lead';
+import { Captcha } from '../common/Captcha/Captcha';
 
 const leadFormSchema = z.object({
   name: z.string().min(1, 'Имя обязательно').max(255, 'Имя слишком длинное'),
@@ -24,6 +25,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false })
     email: '',
     
   });
+  const [captchaToken, setCaptchaToken] = useState<string>('');
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -54,8 +56,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      await onSubmit(formData);
+    if (validateForm() && captchaToken) {
+      await onSubmit({ ...formData, captchaToken });
     }
   };
 
@@ -85,12 +87,15 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false })
       
       
       
+      <Captcha onSuccess={setCaptchaToken} />
+      
       <Button
         type="submit"
         variant="primary"
         size="lg"
         loading={loading}
         className="w-full"
+        disabled={!captchaToken || loading}
       >
         Оставить заявку
       </Button>

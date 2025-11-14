@@ -6,7 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 const submitLeadSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name too long'),
   email: z.string().email('Invalid email format').max(255, 'Email too long'),
-  service: z.string().max(100, 'Service name too long').optional()
+  service: z.string().max(100, 'Service name too long').optional(),
+  captchaToken: z.string().max(1000, 'Token too long').optional()
 });
 
 export async function POST(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { name, email, service } = validationResult.data;
+    const { name, email, service, captchaToken } = validationResult.data;
     const leadId = uuidv4();
     
     // Check if lead with this email already exists

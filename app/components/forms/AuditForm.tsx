@@ -6,6 +6,7 @@ import { Button } from "../ui/Button";
 import { Checkbox } from "../ui/Checkbox";
 import { z } from "zod";
 import { StartAuditRequest } from "@/types/audit";
+import { Captcha } from "../common/Captcha/Captcha";
 
 const auditFormSchema = z.object({
   url: z.string().url("Введите корректный URL").min(1, "URL обязателен"),
@@ -38,6 +39,7 @@ export const AuditForm: React.FC<AuditFormProps> = ({
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {}
   );
+  const [captchaToken, setCaptchaToken] = useState<string>("");
 
   const handleInputChange = (
     field: keyof FormData,
@@ -70,8 +72,8 @@ export const AuditForm: React.FC<AuditFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      await onSubmit(formData);
+    if (validateForm() && captchaToken) {
+      await onSubmit({ ...formData, captchaToken });
     }
   };
 
@@ -107,12 +109,15 @@ export const AuditForm: React.FC<AuditFormProps> = ({
         disabled={loading}
       />
 
+      <Captcha onSuccess={setCaptchaToken} />
+
       <Button
         type="submit"
         variant="primary"
         size="lg"
         loading={loading}
         className="w-full"
+        disabled={!captchaToken || loading}
       >
         Бесплатная проверка
       </Button>

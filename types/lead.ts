@@ -22,4 +22,5 @@ export interface ServiceRequest {
 export interface SubmitLeadRequest {
   name: string;
   email: string;
+  captchaToken?: string;
 }
