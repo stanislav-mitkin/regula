@@ -85,13 +85,6 @@ export const HowItWorks: React.FC = () => {
                   {step.description}
                 </p>
               </div>
-
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-full w-full">
-                  <div className="h-0.5 bg-blue-200 mx-8"></div>
-                  <div className="absolute right-8 top-0 w-0 h-0 border-l-4 border-l-blue-200 border-t-2 border-b-2 border-t-transparent border-b-transparent"></div>
-                </div>
-              )}
             </motion.div>
           ))}
         </div>
