@@ -6,9 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 const submitLeadSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name too long'),
   email: z.string().email('Invalid email format').max(255, 'Email too long'),
-  phone: z.string().max(50, 'Phone too long').optional().or(z.literal('')),
-  company: z.string().max(255, 'Company name too long').optional().or(z.literal('')),
-  service: z.string().min(1, 'Service is required').max(100, 'Service name too long')
+  service: z.string().max(100, 'Service name too long').optional()
 });
 
 export async function POST(request: NextRequest) {
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { name, email, phone, company, service } = validationResult.data;
+    const { name, email, service } = validationResult.data;
     const leadId = uuidv4();
     
     // Check if lead with this email already exists
@@ -55,8 +53,8 @@ export async function POST(request: NextRequest) {
         id: leadId,
         email,
         name,
-        phone: phone || null,
-        company: company || null,
+        phone: null,
+        company: null,
         status: 'new',
         source: 'landing'
       })
@@ -73,13 +71,14 @@ export async function POST(request: NextRequest) {
     
     // Create service request
     const serviceRequestId = uuidv4();
-    const price = service === 'paid_report' ? 1990.0 : null;
+    const effectiveService = service && service.trim() ? service : 'paid_report';
+    const price = effectiveService === 'paid_report' ? 1990.0 : null;
     const { error: serviceError } = await supabase
       .from('service_requests')
       .insert({
         id: serviceRequestId,
         lead_id: leadId,
-        service_type: service,
+        service_type: effectiveService,
         status: 'pending',
         price
       });

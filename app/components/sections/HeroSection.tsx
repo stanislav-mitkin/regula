@@ -160,6 +160,7 @@ export const HeroSection: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="bg-white rounded-2xl shadow-2xl p-8"
+            id="audit-form"
           >
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">

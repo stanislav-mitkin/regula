@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Пользовательское соглашение - RegulaGuard',
-  description: 'Условия использования сервиса RegulaGuard',
+  description: 'Условия использования информационного сервиса RegulaGuard',
 };
 
 export default function Terms() {
@@ -20,8 +20,8 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Общие положения</h2>
             <p className="text-gray-700 mb-4">
               1.1. Настоящее Пользовательское соглашение (далее — Соглашение) является официальным документом 
-              ООО «РегулаГард» (далее — Администрация), определяющим порядок и условия использования 
-              сервиса RegulaGuard (далее — Сервис).
+              RegulaGuard (далее — Сервис, информационный ресурс), определяющим порядок и условия использования
+              информационного сервиса RegulaGuard.
             </p>
             <p className="text-gray-700 mb-4">
               1.2. Использование Сервиса означает безоговорочное согласие Пользователя с настоящим Соглашением 
@@ -41,13 +41,11 @@ export default function Terms() {
               содержащимся на сайте RegulaGuard.
             </p>
             <p className="text-gray-700 mb-4">
-              2.2. Сервис предоставляет следующие услуги:
+              2.2. Сервис предоставляет следующие услуги (информационные):
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Бесплатная проверка сайтов на соответствие требованиям 152-ФЗ</li>
-              <li>Платные аудиторские услуги в сфере защиты персональных данных</li>
-              <li>Консультационные услуги по вопросам соответствия законодательству</li>
-              <li>Разработка документов и политик в области персональных данных</li>
+              <li>Бесплатная автоматическая проверка базовых параметров (152‑ФЗ)</li>
+              <li>Платный PDF‑отчёт с расширенной автоматической проверкой</li>
             </ul>
           </section>
 
@@ -150,9 +148,7 @@ export default function Terms() {
               По всем вопросам, связанным с использованием Сервиса, вы можете связаться с нами:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Email: <a href="mailto:support@regulaguard.ru" className="text-blue-600 hover:underline">support@regulaguard.ru</a></li>
-              <li>Телефон: <a href="tel:+74951234567" className="text-blue-600 hover:underline">+7 (495) 123-45-67</a></li>
-              <li>Почтовый адрес: 125009, г. Москва, ул. Тверская, д. 1</li>
+              <li>Email: <a href="mailto:info@regulaguard.ru" className="text-blue-600 hover:underline">info@regulaguard.ru</a></li>
             </ul>
           </section>
         </div>

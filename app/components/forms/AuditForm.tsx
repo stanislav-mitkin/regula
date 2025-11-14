@@ -1,18 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { Checkbox } from '../ui/Checkbox';
-import { z } from 'zod';
-import { StartAuditRequest } from '@/types/audit';
+import React, { useState } from "react";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { Checkbox } from "../ui/Checkbox";
+import { z } from "zod";
+import { StartAuditRequest } from "@/types/audit";
 
 const auditFormSchema = z.object({
-  url: z.string().url('Введите корректный URL').min(1, 'URL обязателен'),
+  url: z.string().url("Введите корректный URL").min(1, "URL обязателен"),
   consent: z.boolean().refine((val) => val === true, {
-    message: 'Необходимо согласие на обработку персональных данных'
+    message: "Необходимо согласие на обработку персональных данных",
   }),
-  email: z.string().email('Введите корректный email').optional().or(z.literal(''))
+  email: z
+    .string()
+    .email("Введите корректный email")
+    .optional()
+    .or(z.literal("")),
 });
 
 type FormData = z.infer<typeof auditFormSchema>;
@@ -22,18 +26,26 @@ interface AuditFormProps {
   loading?: boolean;
 }
 
-export const AuditForm: React.FC<AuditFormProps> = ({ onSubmit, loading = false }) => {
+export const AuditForm: React.FC<AuditFormProps> = ({
+  onSubmit,
+  loading = false,
+}) => {
   const [formData, setFormData] = useState<FormData>({
-    url: '',
+    url: "",
     consent: false,
-    email: ''
+    email: "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {}
+  );
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field: keyof FormData,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -45,7 +57,7 @@ export const AuditForm: React.FC<AuditFormProps> = ({ onSubmit, loading = false 
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Partial<Record<keyof FormData, string>> = {};
-        error.issues.forEach(err => {
+        error.issues.forEach((err) => {
           if (err.path[0]) {
             newErrors[err.path[0] as keyof FormData] = err.message;
           }
@@ -70,31 +82,31 @@ export const AuditForm: React.FC<AuditFormProps> = ({ onSubmit, loading = false 
         label="URL сайта для проверки"
         placeholder="https://example.com"
         value={formData.url}
-        onChange={(e) => handleInputChange('url', e.target.value)}
+        onChange={(e) => handleInputChange("url", e.target.value)}
         error={errors.url}
         required
         disabled={loading}
       />
-      
+
       <Input
         type="email"
         label="Email для отправки отчета (опционально)"
         placeholder="client@company.ru"
         value={formData.email}
-        onChange={(e) => handleInputChange('email', e.target.value)}
+        onChange={(e) => handleInputChange("email", e.target.value)}
         error={errors.email}
         disabled={loading}
       />
-      
+
       <Checkbox
         label="Я даю согласие на обработку моих персональных данных в соответствии с требованиями 152-ФЗ"
         checked={formData.consent}
-        onChange={(e) => handleInputChange('consent', e.target.checked)}
+        onChange={(e) => handleInputChange("consent", e.target.checked)}
         error={errors.consent}
         required
         disabled={loading}
       />
-      
+
       <Button
         type="submit"
         variant="primary"

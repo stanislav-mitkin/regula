@@ -97,7 +97,7 @@ export const PenaltiesTable: React.FC = () => {
               viewport={{ once: true }}
               className="bg-white rounded-lg shadow-md p-6 border-l-4 border-gray-200 hover:shadow-lg transition-shadow"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between flex-col md:flex-row">
                 <div className="flex-1">
                   <div className="flex items-center mb-3">
                     <div
@@ -113,7 +113,7 @@ export const PenaltiesTable: React.FC = () => {
                   </div>
                   <p className="text-gray-600 mb-4">{penalty.description}</p>
                 </div>
-                <div className="ml-6 text-right">
+                <div className="text-right md:ml-6">
                   <div
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                       severityColors[penalty.severity]

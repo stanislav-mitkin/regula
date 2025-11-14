@@ -9,9 +9,6 @@ import { SubmitLeadRequest } from '@/types/lead';
 const leadFormSchema = z.object({
   name: z.string().min(1, 'Имя обязательно').max(255, 'Имя слишком длинное'),
   email: z.string().email('Введите корректный email').max(255, 'Email слишком длинный'),
-  phone: z.string().max(50, 'Телефон слишком длинный').optional().or(z.literal('')),
-  company: z.string().max(255, 'Название компании слишком длинное').optional().or(z.literal('')),
-  service: z.string().min(1, 'Выберите услугу').max(100, 'Название услуги слишком длинное')
 });
 
 type FormData = z.infer<typeof leadFormSchema>;
@@ -19,16 +16,13 @@ type FormData = z.infer<typeof leadFormSchema>;
 interface LeadFormProps {
   onSubmit: (data: SubmitLeadRequest) => Promise<void>;
   loading?: boolean;
-  service?: string;
 }
 
-export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false, service = '' }) => {
+export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false }) => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    phone: '',
-    company: '',
-    service: service
+    
   });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
@@ -89,36 +83,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, loading = false, s
         disabled={loading}
       />
       
-      <Input
-        type="text"
-        label="Компания (опционально)"
-        placeholder="ООО Ваша Компания"
-        value={formData.company}
-        onChange={(e) => handleInputChange('company', e.target.value)}
-        error={errors.company}
-        disabled={loading}
-      />
       
-      <div className="w-full">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Услуга <span className="text-red-500">*</span>
-        </label>
-        <select
-          value={formData.service}
-          onChange={(e) => handleInputChange('service', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-            errors.service ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
-          }`}
-          required
-          disabled={loading}
-        >
-          <option value="">Выберите услугу</option>
-          <option value="paid_report">PDF-отчет (1990 ₽)</option>
-        </select>
-        {errors.service && (
-          <p className="mt-2 text-sm text-red-600">{errors.service}</p>
-        )}
-      </div>
       
       <Button
         type="submit"
