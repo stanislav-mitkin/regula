@@ -117,15 +117,12 @@ export const HeroSection: React.FC = () => {
             className="text-gray-900"
           >
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-6 leading-tight">
-              Штрафы до <span className="text-red-400">15 млн руб.</span>
-              <br />
-              за нарушение 152-ФЗ
+              Проверить сайт на соответствие 152‑ФЗ — за 2 минуты
             </h1>
 
             <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-              Автоматизированная проверка вашего сайта на соответствие
-              требованиям закона о персональных данных. Защитите свой бизнес от
-              крупных штрафов и уголовной ответственности.
+              Автоматическая проверка сайта на соответствие 152‑ФЗ и требованиям
+              закона о персональных данных. Результат за несколько минут.
             </p>
 
             <div className="flex items-center mb-8 text-slate-500">

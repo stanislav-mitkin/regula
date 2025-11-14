@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Пользовательское соглашение - RegulaGuard',
   description: 'Условия использования информационного сервиса RegulaGuard',
+  alternates: { canonical: 'https://regulaguard.ru/terms' },
 };
 
 export default function Terms() {

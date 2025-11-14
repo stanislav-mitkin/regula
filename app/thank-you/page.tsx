@@ -5,6 +5,7 @@ import { CheckCircle } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Спасибо за заявку - RegulaGuard',
   description: 'Ваша заявка успешно отправлена. Мы свяжемся с вами в ближайшее время.',
+  alternates: { canonical: 'https://regulaguard.ru/thank-you' },
 };
 
 export default function ThankYou() {

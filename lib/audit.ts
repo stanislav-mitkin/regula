@@ -39,7 +39,7 @@ export type AuditFetchErrorCode =
 export interface AuditFetchError {
   code: AuditFetchErrorCode;
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 export type AuditContextResult =
@@ -167,7 +167,7 @@ export async function buildAuditContext(
         forms: parseForms(html, origin),
       },
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     const classified = classifyAxiosError(err);
     return { ok: false, error: classified };
   }
@@ -234,10 +234,10 @@ function isLikelyHtml(html: string): boolean {
   return head.includes("<html") || head.includes("<!doctype html");
 }
 
-export function classifyAxiosError(error: any): AuditFetchError {
+export function classifyAxiosError(error: unknown): AuditFetchError {
   const axiosErr = error as AxiosError;
   const code =
-    axiosErr.code || (axiosErr.cause && (axiosErr.cause as any).code) || "";
+    axiosErr.code || (axiosErr.cause && (axiosErr.cause as unknown as { code?: string }).code) || "";
 
   switch (code) {
     case "ECONNABORTED":

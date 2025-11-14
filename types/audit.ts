@@ -16,7 +16,7 @@ export interface Violation {
   type: string;
   description: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   created_at: string;
 }
 

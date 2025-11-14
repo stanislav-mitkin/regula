@@ -14,8 +14,25 @@ const startAuditSchema = z.object({
     message: "Consent is required",
   }),
   email: z.email("Invalid email format").optional().or(z.literal("")),
-  captchaToken: z.string().max(1000, "Token too long").optional(),
+  captchaToken: z.string().min(1, "Captcha token required"),
 });
+
+async function verifyCaptcha(token: string, ip?: string) {
+  const secret = process.env.YANDEX_CAPTCHA_SECRET;
+  if (!secret) return { ok: true };
+  const params = new URLSearchParams();
+  params.append("secret", secret);
+  params.append("token", token);
+  if (ip) params.append("ip", ip);
+  const res = await fetch("https://captcha-api.yandex.ru/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
+  const data = await res.json().catch(() => null);
+  if (!data || data.status !== "ok") return { ok: false };
+  return { ok: true };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +51,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url, consent, email } = validationResult.data;
+    const { url, consent, email, captchaToken } = validationResult.data;
+    const ip = request.headers.get("x-forwarded-for") || undefined;
+    const v = await verifyCaptcha(captchaToken, ip);
+    if (!v.ok) {
+      return NextResponse.json({ success: false, error: "Captcha validation failed" }, { status: 403 });
+    }
     const canonUrl = normalizeUrl(url);
 
     const { data: existingPending } = await supabase

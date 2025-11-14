@@ -7,7 +7,25 @@ const submitLeadSchema = z.object({
   name: z.string().min(1, "Name is required").max(255, "Name too long"),
   email: z.email("Invalid email format").max(255, "Email too long"),
   service: z.string().max(100, "Service name too long").optional(),
+  captchaToken: z.string().min(1, "Captcha token required"),
 });
+
+async function verifyCaptcha(token: string, ip?: string) {
+  const secret = process.env.YANDEX_CAPTCHA_SECRET;
+  if (!secret) return { ok: true };
+  const params = new URLSearchParams();
+  params.append("secret", secret);
+  params.append("token", token);
+  if (ip) params.append("ip", ip);
+  const res = await fetch("https://captcha-api.yandex.ru/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
+  const data = await res.json().catch(() => null);
+  if (!data || data.status !== "ok") return { ok: false };
+  return { ok: true };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +44,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, service } = validationResult.data;
+    const { name, email, service, captchaToken } = validationResult.data;
+    const ip = request.headers.get("x-forwarded-for") || undefined;
+    const v = await verifyCaptcha(captchaToken, ip);
+    if (!v.ok) {
+      return NextResponse.json({ success: false, error: "Captcha validation failed" }, { status: 403 });
+    }
     const leadId = uuidv4();
 
     await fetch(

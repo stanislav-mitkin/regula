@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Политика конфиденциальности - RegulaGuard',
   description: 'Политика конфиденциальности информационного сервиса RegulaGuard',
+  alternates: { canonical: 'https://regulaguard.ru/privacy-policy' },
 };
 
 export default function PrivacyPolicy() {
